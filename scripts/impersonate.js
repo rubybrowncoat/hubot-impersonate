@@ -110,21 +110,45 @@ function start(robot) {
   robot.hear(/.*/, function(msg) {
     var text = msg.message.text;
     var markov;
+    var cleanText;
 
-    if (text && !hubotMessageRegex.test(text)) {
-      lastMessageText = text;
+    if (text) {
+      if (!hubotMessageRegex.test(text)) {
+        if (shouldTrain()) {
+          var userId = msg.message.user.id;
+          markov = retrieve(userId);
 
-      if (shouldTrain()) {
-        var userId = msg.message.user.id;
-        markov = retrieve(userId);
+          markov.train(text);
+          store(userId, markov);
+        }
 
-        markov.train(text);
-        store(userId, markov);
-      }
+        if (lastMessageText != text) {
+          if ( shouldRespond() && !_.random(_.random(2,5)) ) {
+            markov = retrieve(impersonating);
+            msg.send(markov.respond(text));
+          }
+        }
 
-      if (shouldRespond()) {
-        markov = retrieve(impersonating);
-        msg.send(markov.respond(text));
+        lastMessageText = text;
+      } else {
+        cleanText = text.replace(hubotMessageRegex, "");
+
+        if (shouldTrain()) {
+          var userId = msg.message.user.id;
+          markov = retrieve(userId);
+
+          markov.train(cleanText);
+          store(userId, markov);
+        }
+
+        if (lastMessageText != cleanText) {
+          if ( shouldRespond() ) {
+            markov = retrieve(impersonating);
+            msg.send(markov.respond(text));
+          }
+        }
+
+        lastMessageText = cleanText;
       }
     }
   });
