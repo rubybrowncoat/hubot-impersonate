@@ -78,11 +78,15 @@ function start(robot) {
 
       if (users && users.length > 0) {
         var user = users[0];
-        impersonating = user.id;
-        msg.send('impersonating ' + user.name);
+        if (user.name != robot.name) {
+          impersonating = user.id;
+          msg.send('impersonating ' + user.name);
 
-        var markov = retrieve(impersonating);
-        msg.send(markov.respond(lastMessageText || 'beans'));
+          var markov = retrieve(impersonating);
+          msg.send(markov.respond(lastMessageText || 'beans'));
+        } else {
+          msg.send("I'm already myself.");
+        }
       }
       else {
         msg.send("I don't know any " + username + ".");
@@ -130,7 +134,8 @@ function start(robot) {
         }
 
         lastMessageText = text;
-      } else {
+      } 
+      /* else {
         cleanText = text.replace(hubotMessageRegex, "");
 
         if (shouldTrain()) {
@@ -149,7 +154,7 @@ function start(robot) {
         }
 
         lastMessageText = cleanText;
-      }
+      } */
     }
   });
 }
