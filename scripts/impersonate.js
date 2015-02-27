@@ -80,7 +80,7 @@ function start(robot) {
       if (users && users.length > 0) {
         var user = users[0];
         if (user.name != robot.name) {
-          impersonatedMessageRegex = new RegExp('^[@]?(' + user.name + ')[:,]?\\s', 'i');
+          impersonatedMessageRegex = new RegExp('[@]?(' + user.name + ')[:,]?\\s', 'i');
 
           impersonating = user.id;
           msg.send('impersonating ' + user.name);
