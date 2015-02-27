@@ -56,6 +56,7 @@ function robotRetrieve(robot, cache, userId) {
 function start(robot) {
   var impersonating = false;
   var lastMessageText;
+  var impersonatedMessageRegex;
 
   function shouldRespond() {
     return shouldRespondMode() && impersonating;
@@ -79,6 +80,8 @@ function start(robot) {
       if (users && users.length > 0) {
         var user = users[0];
         if (user.name != robot.name) {
+          impersonatedMessageRegex = new RegExp('^[@]?(' + user.name + ')[:,]?\\s', 'i');
+
           impersonating = user.id;
           msg.send('impersonating ' + user.name);
 
@@ -127,9 +130,11 @@ function start(robot) {
         }
 
         if (lastMessageText != text) {
-          if ( shouldRespond() && !_.random(_.random(2,5)) ) {
-            markov = retrieve(impersonating);
-            msg.send(markov.respond(text));
+          if ( shouldRespond() ) {
+            if ( impersonatedMessageRegex.test(text) || !_.random(_.random(2,5)) ) {
+              markov = retrieve(impersonating);
+              msg.send(markov.respond(text));
+            }
           }
         }
 
