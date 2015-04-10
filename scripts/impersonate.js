@@ -126,7 +126,7 @@ function start(robot) {
                 // TODO: Add condition for addressing direct messages to Hubot versus ambient participation.
                 // TODO: Make this a configurable setting at some point and simplify implementation
                 // PROTIP: Make sure this doesn't conflict with other/expiringd deps, so look for instances not in [0]
-                if (shouldRespond() && (_.random(0, 100) > FREQUENCY_THRESHOLD) && RESTRICTED_AREAS[0] != user.room) {
+                if (shouldRespond() && (_.random(0, 100) > FREQUENCY_THRESHOLD)) {
                     markov = retrieve(impersonating);
                     var markovResponse = markov.respond(text);
                     var baseDelay = RESPONSE_DELAY_PER_WORD * markovResponse.split(" ").length;
