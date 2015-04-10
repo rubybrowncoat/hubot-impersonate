@@ -111,7 +111,7 @@ function start(robot) {
     });
 
     robot.hear(/.*/, function(msg) {
-        if (RESTRICTED_AREAS[0] != user.room) {
+        if (RESTRICTED_AREAS[0] != msg.message.room) {
             var text = msg.message.text;
             var markov;
 
@@ -136,7 +136,7 @@ function start(robot) {
                     }, totalDelay);
                 }
             }
-        }
+        } else { msg.send("I cannot talk in here. This is just a test before I'm silenced."); }
     });
 
     robot.respond(/who are you impersonating/i, function(msg) {
@@ -161,9 +161,7 @@ function start(robot) {
     });
 
     robot.respond(/what rooms can't you impersonate in/i, function(msg) {
-        if (shouldRespond() && RESTRICTED_AREAS) {
-            msg.send(msg.message.room);
-        } else {
+        if (shouldRespond()) {
             msg.send(msg.message.room);
         }
     });
