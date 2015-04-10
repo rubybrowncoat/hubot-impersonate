@@ -17,7 +17,7 @@
 //
 //Commands:
 //  hubot impersonate <user> - impersonate <user> until told otherwise.
-//  hubot who are you impersonating - find out which user is being impersonated.
+//  hubot give impersonation status - find out which user is being impersonated and rooms restricted from.
 //  hubot stop impersonating - stop impersonating a user
 //
 //Author:
@@ -34,7 +34,7 @@ var CASE_SENSITIVE = (!process.env.HUBOT_IMPERSONATE_CASE_SENSITIVE || process.e
 var STRIP_PUNCTUATION = (!process.env.HUBOT_IMPERSONATE_STRIP_PUNCTUATION || process.env.HUBOT_IMPERSONATE_STRIP_PUNCTUATION === 'false') ? false : true;
 var RESPONSE_DELAY_PER_WORD = process.env.HUBOT_IMPERSONATE_INIT_TIMEOUT ? parseInt(process.env.HUBOT_IMPERSONATE_INIT_TIMEOUT) : 600; // in milliseconds
 var FREQUENCY_THRESHOLD = process.env.HUBOT_IMPERSONATE_FREQUENCY_THRESHOLD ? parseInt(process.env.HUBOT_IMPERSONATE_FREQUENCY_THRESHOLD) : 50;
-var RESTRICTED_AREAS = ['general'];
+var RESTRICTED_AREAS = ['general', 'commits', 'deployments'];
 
 var shouldTrain = _.constant(_.contains(['train', 'train_respond'], MODE));
 
@@ -111,7 +111,7 @@ function start(robot) {
     });
 
     robot.hear(/.*/, function(msg) {
-        if (RESTRICTED_AREAS[0] != msg.message.room) {
+        if (_.contains(RESTRICTED_AREAS, msg.message.room) === false) {
             var text = msg.message.text;
             var markov;
 
@@ -139,30 +139,14 @@ function start(robot) {
         }
     });
 
-    robot.respond(/who are you impersonating/i, function(msg) {
+    robot.respond(/give impersonation status/i, function(msg) {
         if (shouldRespond()) {
             var user = robot.brain.userForId(impersonating);
             if (user) {
-                msg.send("I'm currently impersonating " + user.name + ".");
+                msg.send("I am impersonating " + user.name + ", and am restricted from " + RESTRICTED_AREAS.join(", ") + ".");
             } else {
-                msg.send("Nobody.");
+                msg.send("I'm not impersonating anyone, and am restricted from " + RESTRICTED_AREAS.join(", ") + ".");
             }
-        } else {
-            msg.send("Nobody.");
-        }
-    });
-
-    robot.respond(/what room are we in/i, function(msg) {
-        if (shouldRespond()) {
-            msg.send("We are in room " + msg.message.room + ", and am restricted from " + RESTRICTED_AREAS[0]);
-        } else {
-            msg.send("We are in room " + msg.message.room + ", and am restricted from " + RESTRICTED_AREAS[0]);
-        }
-    });
-
-    robot.respond(/what rooms can't you impersonate in/i, function(msg) {
-        if (shouldRespond()) {
-            msg.send(RESTRICTED_AREAS[0]);
         }
     });
 }
