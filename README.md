@@ -91,11 +91,35 @@ Stop impersonating.
 hubot stop impersonating
 ```
 
-#### Identify impersonated party
+#### Stop impersonation in the present room
 
-Find out who's being impersonated.
+Hush hubot's impersonation routines in the present room
 
 ```
-hubot who are you impersonating
+hubot stop impersonation in here
 ```
+
+#### Start impersonation in the present room
+
+Allow hubot's impersonation routines in the present room
+
+```
+hubot start impersonation in here
+```
+
+#### Get impersonation status
+
+Find out who's being impersonated along with restricted rooms.
+
+```
+hubot give impersonation status
+```
+
+### TODO
+
+* Turn RESTRICTED_AREAS to ALLOWED_AREAS and allow as a configuration variable
+* Allow for frequency threshold manipulation by users
+* Disregard frequency threshold if directly addressed or mentioned
+* Investigate pruning of phrases by keyword to clean up overly-emphasized segments
+* Investigate per-user history clean-slating
 
