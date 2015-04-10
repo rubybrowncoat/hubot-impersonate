@@ -155,11 +155,10 @@ function start(robot) {
     robot.respond(/start impersonation in here/i, function(msg) {
         if (shouldRespond()) {
             if (_.contains(RESTRICTED_AREAS, msg.message.room)) {
-                    _.without(RESTRICTED_AREAS, msg.message.room);
-                    msg.send("I am now allowed to impersonate in " + msg.message.room + ".");
-                } else {
-                    msg.send("I'm already allowed to impersonate in here.")
-                }
+                _.without(RESTRICTED_AREAS, msg.message.room);
+                msg.send("I am now allowed to impersonate in " + msg.message.room + ".");
+            } else {
+                msg.send("I'm already allowed to impersonate in here.");
             }
         }
     });
