@@ -19,6 +19,8 @@
 //  hubot impersonate <user> - impersonate <user> until told otherwise.
 //  hubot give impersonation status - find out which user is being impersonated and rooms restricted from.
 //  hubot stop impersonating - stop impersonating a user
+//  hubot start impersonating in here - remove present room to restricted room list
+//  hubot stop impersonating in here - add present room to restricted room list
 //
 //Author:
 //  b3nj4m
@@ -34,7 +36,7 @@ var CASE_SENSITIVE = (!process.env.HUBOT_IMPERSONATE_CASE_SENSITIVE || process.e
 var STRIP_PUNCTUATION = (!process.env.HUBOT_IMPERSONATE_STRIP_PUNCTUATION || process.env.HUBOT_IMPERSONATE_STRIP_PUNCTUATION === 'false') ? false : true;
 var RESPONSE_DELAY_PER_WORD = process.env.HUBOT_IMPERSONATE_INIT_TIMEOUT ? parseInt(process.env.HUBOT_IMPERSONATE_INIT_TIMEOUT) : 600; // in milliseconds
 var FREQUENCY_THRESHOLD = process.env.HUBOT_IMPERSONATE_FREQUENCY_THRESHOLD ? parseInt(process.env.HUBOT_IMPERSONATE_FREQUENCY_THRESHOLD) : 50;
-var RESTRICTED_AREAS = ['general', 'commits', 'deployments'];
+var RESTRICTED_AREAS = [];
 
 var shouldTrain = _.constant(_.contains(['train', 'train_respond'], MODE));
 
@@ -149,6 +151,21 @@ function start(robot) {
             }
         }
     });
+
+    robot.respond(/start impersonating in here/i, function(msg) {
+        if (shouldRespond()) {
+            RESTRICTED_AREAS = _.without(RESTRICTED_AREAS, msg.message.room);
+            msg.send("I am now allowed to impersonate in " + msg.message.room + ".");
+        }
+    });
+
+    robot.respond(/stop impersonating in here/i, function(msg) {
+        if (shouldRespond()) {
+            RESTRICTED_AREAS = RESTRICTED_AREAS.push(msg.message.room);
+            msg.send("I am now restricted from " + RESTRICTED_AREAS.join(", ") + ".");
+        }
+    });
+
 }
 
 module.exports = function(robot) {
