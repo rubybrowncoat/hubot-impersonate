@@ -154,17 +154,17 @@ function start(robot) {
 
     robot.respond(/what room are we in/i, function(msg) {
         if (shouldRespond()) {
-            msg.send("We are in room " + user.room);
+            msg.send("We are in room " + msg.message.room);
         } else {
-            msg.send("We are in room " + user.room);
+            msg.send("We are in room " + msg.message.room);
         }
     });
 
     robot.respond(/what rooms can't you impersonate in/i, function(msg) {
         if (shouldRespond() && RESTRICTED_AREAS) {
-            msg.send(console.log(msg));
+            msg.send(msg.message.room);
         } else {
-            msg.send(console.log(msg));
+            msg.send(msg.message.room);
         }
     });
 }
