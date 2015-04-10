@@ -154,15 +154,24 @@ function start(robot) {
 
     robot.respond(/start impersonation in here/i, function(msg) {
         if (shouldRespond()) {
-            RESTRICTED_AREAS = _.without(RESTRICTED_AREAS, msg.message.room);
-            msg.send("I am now allowed to impersonate in " + msg.message.room + ".");
+            if (_.contains(RESTRICTED_AREAS, msg.message.room) {
+                    _.without(RESTRICTED_AREAS, msg.message.room);
+                    msg.send("I am now allowed to impersonate in " + msg.message.room + ".");
+                } else {
+                    msg.send("I'm already allowed to impersonate in here.")
+                }
+            }
         }
     });
 
     robot.respond(/stop impersonation in here/i, function(msg) {
         if (shouldRespond()) {
-            RESTRICTED_AREAS.push(msg.message.room);
-            msg.send("I am now restricted from " + RESTRICTED_AREAS.join(", ") + ".");
+            if (!_.contains(RESTRICTED_AREAS, msg.message.room)) {
+                RESTRICTED_AREAS.push(msg.message.room);
+                msg.send("I am now restricted from " + RESTRICTED_AREAS.join(", ") + ".");
+            } else {
+                msg.send("I'm already restricted here. Yeesh.");
+            }
         }
     });
 }
