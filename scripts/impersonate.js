@@ -144,7 +144,7 @@ function start(robot) {
     robot.respond(/give impersonation status/i, function(msg) {
         if (shouldRespond()) {
             var user = robot.brain.userForId(impersonating);
-            if (user) {
+            if (user.name) {
                 msg.send("I am impersonating " + user.name + ", and am restricted from " + RESTRICTED_AREAS.join(", ") + ".");
             } else {
                 msg.send("I'm not impersonating anyone, and am restricted from " + RESTRICTED_AREAS.join(", ") + ".");
