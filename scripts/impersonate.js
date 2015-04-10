@@ -34,6 +34,7 @@ var CASE_SENSITIVE = (!process.env.HUBOT_IMPERSONATE_CASE_SENSITIVE || process.e
 var STRIP_PUNCTUATION = (!process.env.HUBOT_IMPERSONATE_STRIP_PUNCTUATION || process.env.HUBOT_IMPERSONATE_STRIP_PUNCTUATION === 'false') ? false : true;
 var RESPONSE_DELAY_PER_WORD = process.env.HUBOT_IMPERSONATE_INIT_TIMEOUT ? parseInt(process.env.HUBOT_IMPERSONATE_INIT_TIMEOUT) : 600; // in milliseconds
 var FREQUENCY_THRESHOLD = process.env.HUBOT_IMPERSONATE_FREQUENCY_THRESHOLD ? parseInt(process.env.HUBOT_IMPERSONATE_FREQUENCY_THRESHOLD) : 50;
+var RESTRICTED_AREAS = ['general'];
 
 var shouldTrain = _.constant(_.contains(['train', 'train_respond'], MODE));
 
@@ -110,27 +111,30 @@ function start(robot) {
     });
 
     robot.hear(/.*/, function(msg) {
-        var text = msg.message.text;
-        var markov;
+        if (RESTRICTED_AREAS[0] != user.room) {
+            var text = msg.message.text;
+            var markov;
 
-        if (text && !hubotMessageRegex.test(text)) {
-            if (shouldTrain()) {
-                var userId = msg.message.user.id;
-                markov = retrieve(userId);
-                markov.train(text);
-                store(userId, markov);
-            }
+            if (text && !hubotMessageRegex.test(text)) {
+                if (shouldTrain()) {
+                    var userId = msg.message.user.id;
+                    markov = retrieve(userId);
+                    markov.train(text);
+                    store(userId, markov);
+                }
 
-            // TODO: Add condition for addressing direct messages to Hubot versus ambient participation.
-            // TODO: Make this a configurable setting at some point and simplify implementation
-            if (shouldRespond() && (_.random(0, 100) > FREQUENCY_THRESHOLD)) {
-                markov = retrieve(impersonating);
-                var markovResponse = markov.respond(text);
-                var baseDelay = RESPONSE_DELAY_PER_WORD * markovResponse.split(" ").length;
-                var totalDelay = Math.random() * (baseDelay * 1.5 - baseDelay * 0.75) + baseDelay * 0.75;
-                setTimeout(function() {
-                    msg.send(markovResponse);
-                }, totalDelay);
+                // TODO: Add condition for addressing direct messages to Hubot versus ambient participation.
+                // TODO: Make this a configurable setting at some point and simplify implementation
+                // PROTIP: Make sure this doesn't conflict with other/expiringd deps, so look for instances not in [0]
+                if (shouldRespond() && (_.random(0, 100) > FREQUENCY_THRESHOLD) && RESTRICTED_AREAS[0] != user.room) {
+                    markov = retrieve(impersonating);
+                    var markovResponse = markov.respond(text);
+                    var baseDelay = RESPONSE_DELAY_PER_WORD * markovResponse.split(" ").length;
+                    var totalDelay = Math.random() * (baseDelay * 1.5 - baseDelay * 0.75) + baseDelay * 0.75;
+                    setTimeout(function() {
+                        msg.send(markovResponse);
+                    }, totalDelay);
+                }
             }
         }
     });
@@ -143,6 +147,14 @@ function start(robot) {
             } else {
                 msg.send("Nobody.");
             }
+        } else {
+            msg.send("Nobody.");
+        }
+    });
+
+    robot.respond(/what room are we in/i, function(msg) {
+        if (shouldRespond()) {
+          msg.send("We are in room " + user.room);
         } else {
             msg.send("Nobody.");
         }
