@@ -19,8 +19,8 @@
 //  hubot impersonate <user> - impersonate <user> until told otherwise.
 //  hubot give impersonation status - find out which user is being impersonated and rooms restricted from.
 //  hubot stop impersonating - stop impersonating a user
-//  hubot start impersonating in here - remove present room to restricted room list
-//  hubot stop impersonating in here - add present room to restricted room list
+//  hubot start impersonation in here - remove present room to restricted room list
+//  hubot stop impersonation in here - add present room to restricted room list
 //
 //Author:
 //  b3nj4m
@@ -152,14 +152,14 @@ function start(robot) {
         }
     });
 
-    robot.respond(/start impersonating in here/i, function(msg) {
+    robot.respond(/start impersonation in here/i, function(msg) {
         if (shouldRespond()) {
             RESTRICTED_AREAS = _.without(RESTRICTED_AREAS, msg.message.room);
             msg.send("I am now allowed to impersonate in " + msg.message.room + ".");
         }
     });
 
-    robot.respond(/stop impersonating in here/i, function(msg) {
+    robot.respond(/stop impersonation in here/i, function(msg) {
         if (shouldRespond()) {
             RESTRICTED_AREAS = RESTRICTED_AREAS.push(msg.message.room);
             msg.send("I am now restricted from " + RESTRICTED_AREAS.join(", ") + ".");
