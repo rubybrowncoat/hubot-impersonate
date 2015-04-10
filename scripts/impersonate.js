@@ -156,7 +156,15 @@ function start(robot) {
         if (shouldRespond()) {
           msg.send("We are in room " + user.room);
         } else {
-            msg.send("Nobody.");
+            msg.send("We are in room " + user.room);
+        }
+    });
+
+    robot.respond(/what rooms can't you impersonate in/i, function(msg) {
+        if (shouldRespond() && RESTRICTED_AREAS.length > 0) {
+          msg.send(RESTRICTED_AREAS[0]);
+        } else {
+            msg.send("I'm clear everywhere.");
         }
     });
 }
