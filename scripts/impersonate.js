@@ -161,7 +161,7 @@ function start(robot) {
 
     robot.respond(/stop impersonation in here/i, function(msg) {
         if (shouldRespond()) {
-            RESTRICTED_AREAS = RESTRICTED_AREAS.push(msg.message.room);
+            RESTRICTED_AREAS.push(msg.message.room);
             msg.send("I am now restricted from " + RESTRICTED_AREAS.join(", ") + ".");
         }
     });
