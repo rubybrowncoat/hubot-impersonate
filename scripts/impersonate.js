@@ -154,7 +154,7 @@ function start(robot) {
 
     robot.respond(/start impersonation in here/i, function(msg) {
         if (shouldRespond()) {
-            _.without(RESTRICTED_AREAS, msg.message.room);
+            RESTRICTED_AREAS = _.without(RESTRICTED_AREAS, msg.message.room);
             msg.send("I am now allowed to impersonate in " + msg.message.room + ".");
         }
     });
