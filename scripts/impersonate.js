@@ -61,8 +61,8 @@ function robotRetrieve(robot, cache, userId) {
   return m;
 }
 
-function checkUserIntegrity(user, msg) {
-  console.log('###', robot.brain.data.users[user.id], msg);
+function checkUserIntegrity(msg) {
+  console.log('###', robot.brain.data.users[user.id], msg.message.user);
 }
 
 function start(robot) {
@@ -92,7 +92,6 @@ function start(robot) {
       if (users && users.length > 0) {
         var user = users[0];
 
-        checkUserIntegrity(user, msg);
         if (user.name !== robot.name) {
           impersonatedMessageRegex = new RegExp('[@]?(' + user.name + ')[:,]?\\s', 'i');
 
@@ -123,6 +122,8 @@ function start(robot) {
   });
 
   robot.hear(/.*/, function(msg) {
+    checkUserIntegrity(msg);
+
     if (_.contains(RESTRICTED_AREAS, msg.message.room) === false) {
       var text = msg.message.text;
       var markov;
