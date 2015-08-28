@@ -67,7 +67,7 @@ function start(robot) {
   var impersonatedMessageRegex;
 
   function shouldRespond() {
-  return shouldRespondMode() && impersonating;
+    return shouldRespondMode() && impersonating;
   }
 
   var cache = {};
@@ -153,7 +153,7 @@ function start(robot) {
   });
 
   robot.respond(/give impersonation status/i, function(msg) {
-    if (shouldRespond()) {
+    if (shouldRespondMode()) {
       var user = robot.brain.userForId(impersonating);
 
       var extra = !_.isEmpty(RESTRICTED_AREAS) ? ", and I am restricted from " + RESTRICTED_AREAS.join(", ") : "";
@@ -167,7 +167,7 @@ function start(robot) {
   });
 
   robot.respond(/start impersonation in here/i, function(msg) {
-    if (shouldRespond()) {
+    if (shouldRespondMode()) {
       if (_.contains(RESTRICTED_AREAS, msg.message.room)) {
         RESTRICTED_AREAS = _.without(RESTRICTED_AREAS, msg.message.room);
         msg.send("I am now allowed to impersonate in " + msg.message.room + ".");
@@ -178,7 +178,7 @@ function start(robot) {
   });
 
   robot.respond(/stop impersonation in here/i, function(msg) {
-    if (shouldRespond()) {
+    if (shouldRespondMode()) {
       if (!_.contains(RESTRICTED_AREAS, msg.message.room)) {
         RESTRICTED_AREAS.push(msg.message.room);
         msg.send("I am now restricted from " + RESTRICTED_AREAS.join(", ") + ".");
