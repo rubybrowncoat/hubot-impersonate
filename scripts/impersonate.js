@@ -78,9 +78,9 @@ function start(robot) {
 
   var hubotMessageRegex = new RegExp('^[@]?(' + robot.name + ')' + (robot.alias ? '|(' + robot.alias + ')' : '') + '[:,]?\\s', 'i');
 
-  robot.respond(/impersonate (.*)/i, function(msg) {
+  robot.respond(/impersonate [@]?(.*)/i, function(msg) {
     if (shouldRespondMode()) {
-      var username = msg.match[1];
+      var username = msg.match[1].trim();
       var text = msg.message.text;
 
       var users = robot.brain.usersForFuzzyName(username);
