@@ -62,7 +62,7 @@ function robotRetrieve(robot, cache, userId) {
 }
 
 function checkUserIntegrity(msg) {
-  console.log('###', robot.brain.data.users[user.id], msg.message.user);
+  console.log('###', robot.brain.data.users[user.id], msg.message);
 }
 
 function start(robot) {
