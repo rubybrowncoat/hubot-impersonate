@@ -160,7 +160,6 @@ function start(robot) {
       } else {
         msg.send("I'm not impersonating anyone, and am restricted from " + RESTRICTED_AREAS.join(", ") + ".");
       }
-      }
     }
   });
 
