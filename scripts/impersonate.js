@@ -48,7 +48,7 @@ function robotStore(robot, userId, data) {
 
 function robotRetrieve(robot, cache, userId) {
   if (cache[userId]) {
-    return cache[userId];
+  return cache[userId];
   }
 
   var data = msgpack.unpack(new Buffer(robot.brain.get('impersonateMarkov-' + userId) || ''));
@@ -63,9 +63,11 @@ function robotRetrieve(robot, cache, userId) {
 
 function start(robot) {
   var impersonating = false;
+  var lastMessageText;
+  var impersonatedMessageRegex;
 
   function shouldRespond() {
-    return shouldRespondMode() && impersonating;
+  return shouldRespondMode() && impersonating;
   }
 
   var cache = {};
@@ -76,123 +78,125 @@ function start(robot) {
 
   var hubotMessageRegex = new RegExp('^[@]?(' + robot.name + ')' + (robot.alias ? '|(' + robot.alias + ')' : '') + '[:,]?\\s', 'i');
 
-    robot.respond(/impersonate (\w*)/i, function(msg) {
-        if (shouldRespondMode()) {
-            var username = msg.match[1];
-            var text = msg.message.text;
+  robot.respond(/impersonate (.*)/i, function(msg) {
+    if (shouldRespondMode()) {
+      var username = msg.match[1];
+      var text = msg.message.text;
 
       var users = robot.brain.usersForFuzzyName(username);
 
-            if (users && users.length > 0) {
-                var user = users[0];
-                if (user.name !== robot.name) {
-                    impersonating = user.id;
-                    msg.send("Alright, I'll impersonate " + user.name + ".");
-                } else {
-                    msg.send("Impersonating yourself? How meta.");
-                }
-            } else {
-                msg.send("I don't know anyone by the name of " + username + ".");
-            }
-        }
-    });
+      if (users && users.length > 0) {
+        var user = users[0];
+        if (user.name !== robot.name) {
+          impersonatedMessageRegex = new RegExp('[@]?(' + user.name + ')[:,]?\\s', 'i');
 
-    robot.respond(/stop impersonating/i, function(msg) {
-        if (shouldRespond()) {
-            var user = robot.brain.userForId(impersonating);
-            impersonating = false;
-
-            if (user) {
-                msg.send("Fine, I'll shut up now.");
-            } else {
-                msg.send("I don't recognize that user, but I've stopped impersonating anyway.");
-            }
+          impersonating = user.id;
+          msg.send("Alright, I'll impersonate " + user.name + ".");
         } else {
-            msg.send("I wasn't impersonating anyone to begin with.");
+          msg.send("Impersonating myself? How meta.");
         }
-    });
+      } else {
+        msg.send("I don't know anyone by the name of " + username + ".");
+      }
+    }
+  });
 
-    robot.hear(/.*/, function(msg) {
-        if (_.contains(RESTRICTED_AREAS, msg.message.room) === false) {
-            var text = msg.message.text;
-            var markov;
+  robot.respond(/stop impersonating/i, function(msg) {
+    if (shouldRespond()) {
+      var user = robot.brain.userForId(impersonating);
+      impersonating = false;
 
-            if (text && !hubotMessageRegex.test(text)) {
-                if (shouldTrain()) {
-                    var userId = msg.message.user.id;
-                    markov = retrieve(userId);
-                    markov.train(text);
-                    store(userId, markov);
-                }
+      if (user) {
+        msg.send("Fine, I'll shut up now.");
+      } else {
+        msg.send("I don't recognize that user, but I've stopped impersonating anyway.");
+      }
+    } else {
+      msg.send("I wasn't impersonating anyone to begin with.");
+    }
+  });
 
-                // TODO: Add condition for addressing direct messages to Hubot versus ambient participation.
-                // TODO: Make this a configurable setting at some point and simplify implementation
-                // PROTIP: Make sure this doesn't conflict with other/expiringd deps, so look for instances not in [0]
-                if (shouldRespond() && (_.random(0, 100) > FREQUENCY_THRESHOLD)) {
-                    markov = retrieve(impersonating);
-                    var markovResponse = markov.respond(text);
-                    var baseDelay = RESPONSE_DELAY_PER_WORD * markovResponse.split(" ").length;
-                    var totalDelay = Math.random() * (baseDelay * 1.5 - baseDelay * 0.75) + baseDelay * 0.75;
-                    setTimeout(function() {
-                        msg.send(markovResponse);
-                    }, totalDelay);
-                }
-            }
+  robot.hear(/.*/, function(msg) {
+    if (_.contains(RESTRICTED_AREAS, msg.message.room) === false) {
+      var text = msg.message.text;
+      var markov;
+
+      if (text && !hubotMessageRegex.test(text)) {
+        if (shouldTrain()) {
+          var userId = msg.message.user.id;
+          markov = retrieve(userId);
+
+          markov.train(text);
+          store(userId, markov);
         }
-    });
 
-    robot.respond(/give impersonation status/i, function(msg) {
-        if (shouldRespond()) {
-            var user = robot.brain.userForId(impersonating);
-            if (user.name) {
-                msg.send("I am impersonating " + user.name + ", and am restricted from " + RESTRICTED_AREAS.join(", ") + ".");
-            } else {
-                msg.send("I'm not impersonating anyone, and am restricted from " + RESTRICTED_AREAS.join(", ") + ".");
-            }
+        // TODO: Add condition for addressing direct messages to Hubot versus ambient participation.
+        // TODO: Make this a configurable setting at some point and simplify implementation
+        // PROTIP: Make sure this doesn't conflict with other/expiringd deps, so look for instances not in [0]
+        if (shouldRespond() && lastMessageText != text) {
+          if (_.random(0, 100) > FREQUENCY_THRESHOLD || impersonatedMessageRegex.test(text)) {
+            markov = retrieve(impersonating);
+            var markovResponse = markov.respond(text);
+
+            var baseDelay = RESPONSE_DELAY_PER_WORD * markovResponse.split(" ").length;
+            var totalDelay = Math.random() * (baseDelay * 1.5 - baseDelay * 0.75) + baseDelay * 0.75;
+
+            setTimeout(function() {
+              msg.send(markovResponse);
+            }, totalDelay);
           }
         }
-    });
+      }
 
-    robot.respond(/start impersonation in here/i, function(msg) {
-        if (shouldRespond()) {
-            if (_.contains(RESTRICTED_AREAS, msg.message.room)) {
-      /* else {
-                RESTRICTED_AREAS = _.without(RESTRICTED_AREAS, msg.message.room);
-
-                msg.send("I am now allowed to impersonate in " + msg.message.room + ".");
-          var userId = msg.message.user.id;
-            } else {
-                msg.send("I'm already allowed to impersonate in here.");
-            }
-        }
-    });
-
-    robot.respond(/stop impersonation in here/i, function(msg) {
-        if (shouldRespond()) {
-            if (!_.contains(RESTRICTED_AREAS, msg.message.room)) {
-                RESTRICTED_AREAS.push(msg.message.room);
-                msg.send("I am now restricted from " + RESTRICTED_AREAS.join(", ") + ".");
-            } else {
-                msg.send("I'm already restricted here. Yeesh.");
-            }
-        }
-
-        lastMessageText = cleanText;
-      } */
+      lastMessageText = text;
     }
-    });
+  });
+
+  robot.respond(/give impersonation status/i, function(msg) {
+    if (shouldRespond()) {
+      var user = robot.brain.userForId(impersonating);
+      if (user.name) {
+        msg.send("I am impersonating " + user.name + ", and am restricted from " + RESTRICTED_AREAS.join(", ") + ".");
+      } else {
+        msg.send("I'm not impersonating anyone, and am restricted from " + RESTRICTED_AREAS.join(", ") + ".");
+      }
+      }
+    }
+  });
+
+  robot.respond(/start impersonation in here/i, function(msg) {
+    if (shouldRespond()) {
+      if (_.contains(RESTRICTED_AREAS, msg.message.room)) {
+        RESTRICTED_AREAS = _.without(RESTRICTED_AREAS, msg.message.room);
+        msg.send("I am now allowed to impersonate in " + msg.message.room + ".");
+      } else {
+        msg.send("I'm already allowed to impersonate in here.");
+      }
+    }
+  });
+
+  robot.respond(/stop impersonation in here/i, function(msg) {
+    if (shouldRespond()) {
+      if (!_.contains(RESTRICTED_AREAS, msg.message.room)) {
+        RESTRICTED_AREAS.push(msg.message.room);
+        msg.send("I am now restricted from " + RESTRICTED_AREAS.join(", ") + ".");
+      } else {
+        msg.send("I'm already restricted here. Yeesh.");
+      }
+    }
+  });
 }
 
 module.exports = function(robot) {
-    var loaded = _.once(function() {
-        console.log('starting hubot-impersonate...');
-        start(robot);
-    });
+  var loaded = _.once(function() {
+    console.log('starting hubot-impersonate...');
+    start(robot);
+  });
 
-    if (_.isEmpty(robot.brain.data) || _.isEmpty(robot.brain.data._private)) {
-        robot.brain.once('loaded', loaded);
-        setTimeout(loaded, INIT_TIMEOUT);
-    } else {
-        loaded();
-    }
+  if (_.isEmpty(robot.brain.data) || _.isEmpty(robot.brain.data._private)) {
+    robot.brain.once('loaded', loaded);
+    setTimeout(loaded, INIT_TIMEOUT);
+  } else {
+    loaded();
+  }
 };
