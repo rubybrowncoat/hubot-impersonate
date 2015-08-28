@@ -155,10 +155,13 @@ function start(robot) {
   robot.respond(/give impersonation status/i, function(msg) {
     if (shouldRespond()) {
       var user = robot.brain.userForId(impersonating);
+
+      var extra = !_.isEmpty(RESTRICTED_AREAS) ? ", and I am restricted from " + RESTRICTED_AREAS.join(", ") : "";
+      
       if (user.name) {
-        msg.send("I am impersonating " + user.name + ", and am restricted from " + RESTRICTED_AREAS.join(", ") + ".");
+        msg.send("I am impersonating " + user.name + extra + ".");
       } else {
-        msg.send("I'm not impersonating anyone, and am restricted from " + RESTRICTED_AREAS.join(", ") + ".");
+        msg.send("I'm not impersonating anyone" + extra + ".");
       }
     }
   });
