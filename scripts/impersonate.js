@@ -61,6 +61,10 @@ function robotRetrieve(robot, cache, userId) {
   return m;
 }
 
+function checkUserIntegrity(user, msg) {
+  console.log('###', robot.brain.data.users[user.id], msg);
+}
+
 function start(robot) {
   var impersonating = false;
   var lastMessageText;
@@ -87,6 +91,8 @@ function start(robot) {
 
       if (users && users.length > 0) {
         var user = users[0];
+
+        checkUserIntegrity(user, msg);
         if (user.name !== robot.name) {
           impersonatedMessageRegex = new RegExp('[@]?(' + user.name + ')[:,]?\\s', 'i');
 
@@ -138,8 +144,9 @@ function start(robot) {
             markov = retrieve(impersonating);
             var markovResponse = markov.respond(text);
 
-            var baseDelay = RESPONSE_DELAY_PER_WORD * markovResponse.split(" ").length;
-            var totalDelay = Math.random() * (baseDelay * 1.5 - baseDelay * 0.75) + baseDelay * 0.75;
+            // var baseDelay = RESPONSE_DELAY_PER_WORD * markovResponse.split(" ").length;
+            // var totalDelay = Math.random() * (baseDelay * 1.5 - baseDelay * 0.75) + baseDelay * 0.75;
+            var totalDelay = 0;
 
             setTimeout(function() {
               msg.send(markovResponse);
