@@ -62,7 +62,13 @@ function robotRetrieve(robot, cache, userId) {
 }
 
 function checkUserIntegrity(msg) {
+  console.log(msg.message);
+  
   console.log('###', robot.brain.data.users[msg.message.user.id], msg.message.user);
+}
+
+function displayAreas() {
+  return RESTRICTED_AREAS.map(function(e) { return e.name; }.join(", ");
 }
 
 function start(robot) {
@@ -124,7 +130,7 @@ function start(robot) {
   robot.hear(/.*/, function(msg) {
     checkUserIntegrity(msg);
 
-    if (_.contains(RESTRICTED_AREAS, msg.message.room) === false) {
+    if (_.findWhere(RESTRICTED_AREAS, {id: msg.message.room}) === false) {
       var text = msg.message.text;
       var markov;
 
@@ -164,7 +170,7 @@ function start(robot) {
     if (shouldRespond()) {
       var user = robot.brain.userForId(impersonating);
 
-      var extra = !_.isEmpty(RESTRICTED_AREAS) ? ", and I am restricted from " + RESTRICTED_AREAS.join(", ") : "";
+      var extra = !_.isEmpty(RESTRICTED_AREAS) ? ", and I am restricted from " + displayAreas() : "";
       
       if (user.name) {
         msg.send("I am impersonating " + user.name + extra + ".");
@@ -191,7 +197,7 @@ function start(robot) {
     if (shouldRespondMode()) {
       if (!_.contains(RESTRICTED_AREAS, msg.message.room)) {
         RESTRICTED_AREAS.push(msg.message.room);
-        msg.send("I am now restricted from " + RESTRICTED_AREAS.join(", ") + ".");
+        msg.send("I am now restricted from " + displayAreas() + ".");
       } else {
         msg.send("I'm already restricted here. Yeesh.");
       }
