@@ -63,12 +63,12 @@ function robotRetrieve(robot, cache, userId) {
 
 function checkUserIntegrity(msg) {
   console.log(msg.message);
-  
+
   console.log('###', robot.brain.data.users[msg.message.user.id], msg.message.user);
 }
 
 function displayAreas() {
-  return RESTRICTED_AREAS.map(function(e) { return e.name; }.join(", ");
+  return RESTRICTED_AREAS.map(function(e) { return e.name; }).join(", ");
 }
 
 function start(robot) {
