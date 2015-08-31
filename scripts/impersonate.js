@@ -62,6 +62,7 @@ function robotRetrieve(robot, cache, userId) {
 }
 
 function checkUserIntegrity(msg) {
+  console.log(msg);
   console.log(msg.message);
 
   if (robot.brain.data.users[msg.message.user.id].name !== msg.message.user.name) {
