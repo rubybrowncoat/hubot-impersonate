@@ -62,7 +62,8 @@ function robotRetrieve(robot, cache, userId) {
 }
 
 function checkUserIntegrity(msg) {
-  console.log(msg.message.chat);
+  console.log(msg.message);
+
   if (robot.brain.data.users[msg.message.user.id].name !== msg.message.user.name) {
     console.log('Username ' + robot.brain.data.users[msg.message.user.id].name + ' updated to ' + msg.message.user.name + '.');
     robot.brain.data.users[msg.message.user.id].name = msg.message.user.name;
