@@ -61,13 +61,6 @@ function robotRetrieve(robot, cache, userId) {
   return m;
 }
 
-function checkUserIntegrity(msg) {
-  if (robot.brain.data.users[msg.message.user.id].name !== msg.message.user.name) {
-    console.log('Username ' + robot.brain.data.users[msg.message.user.id].name + ' updated to ' + msg.message.user.name + '.');
-    robot.brain.data.users[msg.message.user.id].name = msg.message.user.name;
-  }
-}
-
 function start(robot) {
   var impersonating = false;
   var lastMessageText;
@@ -125,8 +118,6 @@ function start(robot) {
   });
 
   robot.hear(/.*/, function(msg) {
-    checkUserIntegrity(msg);
-
     if (_.contains(RESTRICTED_AREAS, msg.message.room) === false) {
       var text = msg.message.text;
       var markov;
